@@ -1,72 +1,57 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using VacationRental.Api.Models;
+using System.Net;
+using VacationRental.Domain.Commands.CreateBooking;
+using VacationRental.Domain.Core.Dtos.Requests;
+using VacationRental.Domain.Queries.GetBooking;
 
 namespace VacationRental.Api.Controllers
 {
-    [Route("api/v1/bookings")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/bookings")]
+    [Produces("application/vnd.api+json")]
+    [Consumes("application/vnd.api+json")]
     [ApiController]
     public class BookingsController : ControllerBase
     {
-        private readonly IDictionary<int, RentalViewModel> _rentals;
-        private readonly IDictionary<int, BookingViewModel> _bookings;
+        private readonly IMediator _mediator;
 
-        public BookingsController(
-            IDictionary<int, RentalViewModel> rentals,
-            IDictionary<int, BookingViewModel> bookings)
+
+        public BookingsController(IMediator mediator)
         {
-            _rentals = rentals;
-            _bookings = bookings;
+            _mediator = mediator;
         }
 
-        [HttpGet]
-        [Route("{bookingId:int}")]
-        public BookingViewModel Get(int bookingId)
-        {
-            if (!_bookings.ContainsKey(bookingId))
-                throw new ApplicationException("Booking not found");
+        /// <summary>
+        /// Retrieves the booking information for a rental
+        /// </summary>
+        /// <response code="200">Retrieve a booking for rental</response>
+        /// <response code="404">There are no booking to retrieve</response>
+        /// <response code="500">Internal error when retrieving a booking</response>
+        /// <param name="rentalId"></param>
+        [HttpGet("{bookingId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult Get([FromRoute] int bookingId)
+            => Ok(_mediator.Send(new GetBookingCommand(bookingId)));
 
-            return _bookings[bookingId];
-        }
 
+        /// <summary>
+        /// Create the the booking for a rental
+        /// </summary>
+        /// <response code="200">Create a booking</response>
+        /// <response code="422">Invalid booking</response>
+        /// <response code="500">Internal error when creating a booking</response>
+        /// <param name="rentalId"></param>
+        /// <returns></returns>
         [HttpPost]
-        public ResourceIdViewModel Post(BookingBindingModel model)
-        {
-            if (model.Nights <= 0)
-                throw new ApplicationException("Nigts must be positive");
-            if (!_rentals.ContainsKey(model.RentalId))
-                throw new ApplicationException("Rental not found");
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult Create([FromBody] CreateBookingRequest request)
+            => StatusCode((int)HttpStatusCode.Created, _mediator.Send(new CreateBookingCommand(request.RentalId, request.Start, request.Nights)));
 
-            for (var i = 0; i < model.Nights; i++)
-            {
-                var count = 0;
-                foreach (var booking in _bookings.Values)
-                {
-                    if (booking.RentalId == model.RentalId
-                        && (booking.Start <= model.Start.Date && booking.Start.AddDays(booking.Nights) > model.Start.Date)
-                        || (booking.Start < model.Start.AddDays(model.Nights) && booking.Start.AddDays(booking.Nights) >= model.Start.AddDays(model.Nights))
-                        || (booking.Start > model.Start && booking.Start.AddDays(booking.Nights) < model.Start.AddDays(model.Nights)))
-                    {
-                        count++;
-                    }
-                }
-                if (count >= _rentals[model.RentalId].Units)
-                    throw new ApplicationException("Not available");
-            }
-
-
-            var key = new ResourceIdViewModel { Id = _bookings.Keys.Count + 1 };
-
-            _bookings.Add(key.Id, new BookingViewModel
-            {
-                Id = key.Id,
-                Nights = model.Nights,
-                RentalId = model.RentalId,
-                Start = model.Start.Date
-            });
-
-            return key;
-        }
     }
 }

@@ -1,15 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Collections.Generic;
 using VacationRental.Api.Configurations.Swagger;
 using VacationRental.Api.Models;
+using VacationRental.Infra.CrossCutting.IoC;
 
 namespace VacationRental.Api
 {
@@ -30,7 +31,9 @@ namespace VacationRental.Api
         }
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddResponseCompression()
+            services.AddMediatR(typeof(Startup))
+                .ConfigureContainer()
+                .AddResponseCompression()
                 .AddRouting()
                 .AddApiVersioning(options => options.ReportApiVersions = true)
                 .AddVersionedApiExplorer(options =>
