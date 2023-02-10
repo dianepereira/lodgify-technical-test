@@ -1,43 +1,55 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using VacationRental.Api.Models;
+using System.Net;
+using VacationRental.Domain.Commands.CreateRental;
+using VacationRental.Domain.Core.Dtos.Requests;
+using VacationRental.Domain.Queries.GetRental;
 
 namespace VacationRental.Api.Controllers
 {
-    [Route("api/v1/rentals")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/rentals")]
+    [Produces("application/vnd.api+json")]
+    [Consumes("application/vnd.api+json")]
     [ApiController]
     public class RentalsController : ControllerBase
     {
-        private readonly IDictionary<int, RentalViewModel> _rentals;
+        private readonly IMediator _mediator;
 
-        public RentalsController(IDictionary<int, RentalViewModel> rentals)
+        public RentalsController(IMediator mediator)
         {
-            _rentals = rentals;
+            _mediator = mediator;
         }
 
-        [HttpGet]
-        [Route("{rentalId:int}")]
-        public RentalViewModel Get(int rentalId)
-        {
-            if (!_rentals.ContainsKey(rentalId))
-                throw new ApplicationException("Rental not found");
+        /// <summary>
+        /// Retrieves the rental information
+        /// </summary>
+        /// <response code="200">Retrieve a rental</response>
+        /// <response code="404">There are no rental to retrieve</response>
+        /// <response code="500">Internal error when retrieving a rental</response>
+        /// <param name="rentalId"></param>
+        /// <returns></returns>
+        [HttpGet("{rentalId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult Get([FromRoute] int rentalId)
+            => Ok(_mediator.Send(new GetRentalCommand(rentalId)));
 
-            return _rentals[rentalId];
-        }
-
+        /// <summary>
+        /// Create the host rental
+        /// </summary>
+        /// <response code="200">Create a rental</response>
+        /// <response code="422">Invalid rental</response>
+        /// <response code="500">Internal error when creating a rental</response>
+        /// <param name="rentalId"></param>
+        /// <returns></returns>
         [HttpPost]
-        public ResourceIdViewModel Post(RentalBindingModel model)
-        {
-            var key = new ResourceIdViewModel { Id = _rentals.Keys.Count + 1 };
-
-            _rentals.Add(key.Id, new RentalViewModel
-            {
-                Id = key.Id,
-                Units = model.Units
-            });
-
-            return key;
-        }
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult Create([FromBody] CreateRentalRequest request)
+            => StatusCode((int)HttpStatusCode.Created, _mediator.Send(new CreateRentalCommand(request.Units, request.PreparationTimeInDays)));
     }
 }

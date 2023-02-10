@@ -1,59 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using VacationRental.Api.Models;
+using VacationRental.Domain.Queries.GetCalendar;
 
 namespace VacationRental.Api.Controllers
 {
-    [Route("api/v1/calendar")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/calendar")]
+    [Produces("application/vnd.api+json")]
+    [Consumes("application/vnd.api+json")]
     [ApiController]
     public class CalendarController : ControllerBase
     {
-        private readonly IDictionary<int, RentalViewModel> _rentals;
-        private readonly IDictionary<int, BookingViewModel> _bookings;
+        private readonly IMediator _mediator;
 
-        public CalendarController(
-            IDictionary<int, RentalViewModel> rentals,
-            IDictionary<int, BookingViewModel> bookings)
+        public CalendarController(IMediator mediator)
         {
-            _rentals = rentals;
-            _bookings = bookings;
+            _mediator = mediator;
         }
 
+        /// <summary>
+        /// Retrieves the availability of an existing rental unit
+        /// </summary>
+        /// <response code="200">Retrieve a calendar rental</response>
+        /// <response code="404">There are no calendar rental to retrieve</response>
+        /// <response code="500">Internal error when retrieving a calendar rental</response>
+        /// <param name="rentalId"></param>
         [HttpGet]
-        public CalendarViewModel Get(int rentalId, DateTime start, int nights)
-        {
-            if (nights < 0)
-                throw new ApplicationException("Nights must be positive");
-            if (!_rentals.ContainsKey(rentalId))
-                throw new ApplicationException("Rental not found");
-
-            var result = new CalendarViewModel 
-            {
-                RentalId = rentalId,
-                Dates = new List<CalendarDateViewModel>() 
-            };
-            for (var i = 0; i < nights; i++)
-            {
-                var date = new CalendarDateViewModel
-                {
-                    Date = start.Date.AddDays(i),
-                    Bookings = new List<CalendarBookingViewModel>()
-                };
-
-                foreach (var booking in _bookings.Values)
-                {
-                    if (booking.RentalId == rentalId
-                        && booking.Start <= date.Date && booking.Start.AddDays(booking.Nights) > date.Date)
-                    {
-                        date.Bookings.Add(new CalendarBookingViewModel { Id = booking.Id });
-                    }
-                }
-
-                result.Dates.Add(date);
-            }
-
-            return result;
-        }
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public IActionResult Get([FromQuery] GetCalendarCommand request)
+            => Ok(_mediator.Send(new GetCalendarCommand(request.RentalId, request.Start, request.Nights)));
     }
 }
