@@ -22,12 +22,6 @@ namespace VacationRental.Infra.Data.Repositories
             return _dataPersistence[entity.Id];
         }
 
-        public void Delete(T entity)
-        {
-            if (_dataPersistence.ContainsKey(entity.Id))
-                _dataPersistence.Remove(entity.Id);
-        }
-
         public IEnumerable<T> GetAll()
         {
             return _dataPersistence.Values.ToList();
@@ -39,15 +33,6 @@ namespace VacationRental.Infra.Data.Repositories
                 return null;
 
             return _dataPersistence[id];
-        }
-
-        public T? Update(T entity)
-        {
-            if (!_dataPersistence.ContainsKey(entity.Id))
-                return null;
-
-            _dataPersistence[entity.Id] = entity;
-            return entity;
         }
     }
 }
