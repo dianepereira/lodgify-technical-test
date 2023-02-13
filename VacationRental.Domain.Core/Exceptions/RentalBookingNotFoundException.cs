@@ -1,16 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Net;
 
 namespace VacationRental.Domain.Core.Exceptions
 {
-    public class RentalBookingNotFoundException : Exception
+    public class RentalBookingNotFoundException : DomainException
     {
-        public RentalBookingNotFoundException() { }
-
-        public RentalBookingNotFoundException(int bookingId) : base($"There is no booking for this rental. BookingId : {bookingId}") { }
-
+        public RentalBookingNotFoundException(int bookingId) : base($"There is no booking for this rental. BookingId : {bookingId}", HttpStatusCode.NotFound) { }
     }
 }

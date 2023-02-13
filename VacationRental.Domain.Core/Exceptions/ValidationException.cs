@@ -1,16 +1,11 @@
 ﻿using FluentValidation.Results;
+using System.Net;
 
 namespace VacationRental.Domain.Core.Exceptions
 {
     [Serializable]
-    public class ValidationException : Exception
+    public class ValidationException : DomainException
     {
-        private readonly ValidationResult _validationResult;
-
-        public ValidationException(ValidationResult validationResult) 
-            : base($"Validation error") 
-        { 
-            _validationResult = validationResult;    
-        }
+        public ValidationException(ValidationResult validationResult) : base($"Validation error", HttpStatusCode.UnprocessableEntity)  { }
     }
 }
