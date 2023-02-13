@@ -1,10 +1,10 @@
-﻿namespace VacationRental.Domain.Core.Exceptions
+﻿using System.Net;
+
+namespace VacationRental.Domain.Core.Exceptions
 {
     [Serializable]
-    public class RentalBookingNotAvaiableException : Exception
+    public class RentalBookingNotAvaiableException : DomainException
     {
-        public RentalBookingNotAvaiableException() { }
-
-        public RentalBookingNotAvaiableException(int rentalId) : base($"Rental is not avaiable to the rentalId: {rentalId}") { }  
+        public RentalBookingNotAvaiableException(int rentalId) : base($"Rental is not avaiable to the rentalId: {rentalId}", HttpStatusCode.NotFound) { }  
     }
 }
