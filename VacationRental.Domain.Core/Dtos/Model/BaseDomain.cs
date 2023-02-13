@@ -1,6 +1,6 @@
 ﻿namespace VacationRental.Domain.Core.Dtos.Model
 {
-    public abstract class BaseDomain
+    public class BaseDomain
     {
         public int Id { get; set; }
 

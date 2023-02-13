@@ -7,7 +7,8 @@ namespace VacationRental.Domain.Core.Entities
         public int Units { get; private set; }
         public int PreparationTimeInDays { get; private set; }
 
-        private Rental(int units, int preparationTimeInDays) : base()
+
+        public Rental(int units, int preparationTimeInDays) : base()
         { 
             Units= units;   
             PreparationTimeInDays= preparationTimeInDays;   
