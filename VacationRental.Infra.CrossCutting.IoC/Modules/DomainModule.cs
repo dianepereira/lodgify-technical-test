@@ -1,5 +1,7 @@
-﻿using MediatR;
+﻿using FluentValidation;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using VacationRental.Domain.Behaviors;
 using VacationRental.Domain.Commands.CreateBooking;
 using VacationRental.Domain.Commands.CreateRental;
 using VacationRental.Domain.Core.Dtos.Responses;
@@ -12,16 +14,22 @@ namespace VacationRental.Infra.CrossCutting.IoC.Modules
     public static class DomainModule
     {
         public static IServiceCollection RegisterDomain(this IServiceCollection services)
-            => services.AddCommandHandlers().AddQueriesHandlers();
+            => services.AddCommandBehaviors().AddCommandHandlers().AddQueriesHandlers().AddCommandValidators();
 
+        private static IServiceCollection AddCommandBehaviors(this IServiceCollection services) => services
+            .AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidatorBehavior<,>));
 
         private static IServiceCollection AddCommandHandlers(this IServiceCollection services) => services
-            .AddScoped<IRequestHandler<CreateRentalCommand, CreateRentalResponse>, CreateRentalHandler>()
-            .AddScoped<IRequestHandler<CreateBookingCommand, CreateBookingResponse>, CreateBookingHandler>();
+            .AddScoped<IRequestHandler<CreateRentalCommand, CreateRentalResponse>, CreateRentalCommandHandler>()
+            .AddScoped<IRequestHandler<CreateBookingCommand, CreateBookingResponse>, CreateBookingCommandHandler>();
 
         private static IServiceCollection AddQueriesHandlers(this IServiceCollection services) => services
-            .AddScoped<IRequestHandler<GetRentalCommand, GetRentalResponse>, GetRentalHandler>()
-            .AddScoped<IRequestHandler<GetBookingCommand, GetBookingResponse>, GetBookingHandler>()
-            .AddScoped<IRequestHandler<GetCalendarCommand, GetCalendarResponse>, GetCalendarHandler>();
+            .AddScoped<IRequestHandler<GetRentalQuery, GetRentalResponse>, GetRentalQueryHandler>()
+            .AddScoped<IRequestHandler<GetBookingQuery, GetBookingResponse>, GetBookingQueryHandler>()
+            .AddScoped<IRequestHandler<GetCalendarQuery, GetCalendarResponse>, GetCalendarQueryHandler>();
+
+        public static IServiceCollection AddCommandValidators(this IServiceCollection services) => services
+            .AddScoped<IValidator<CreateBookingCommand>, CreateBookingCommandValidator>()
+            .AddScoped<IValidator<CreateRentalCommand>, CreateRentalCommandValidator>();
     }
 }

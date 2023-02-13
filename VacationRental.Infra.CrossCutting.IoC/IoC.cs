@@ -5,7 +5,7 @@ namespace VacationRental.Infra.CrossCutting.IoC
 {
     public static class IoC
     {
-        public static IServiceCollection ConfigureContainer(this IServiceCollection services) 
-            => services.RegisterDomain();
+        public static IServiceCollection ConfigureContainer(this IServiceCollection services)
+            => services.RegisterDomain().RegisterData();
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using System.Threading.Tasks;
 using VacationRental.Domain.Commands.CreateRental;
 using VacationRental.Domain.Core.Dtos.Requests;
 using VacationRental.Domain.Queries.GetRental;
@@ -11,7 +12,7 @@ namespace VacationRental.Api.Controllers
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/rentals")]
     [Produces("application/vnd.api+json")]
-    [Consumes("application/vnd.api+json")]
+    [Consumes("application/vnd.api+json")]  
     [ApiController]
     public class RentalsController : ControllerBase
     {
@@ -34,8 +35,8 @@ namespace VacationRental.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult Get([FromRoute] int rentalId)
-            => Ok(_mediator.Send(new GetRentalCommand(rentalId)));
+        public async Task<IActionResult> Get([FromRoute] int rentalId)
+            => Ok(await _mediator.Send(new GetRentalQuery(rentalId)));
 
         /// <summary>
         /// Create the host rental
@@ -49,7 +50,7 @@ namespace VacationRental.Api.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult Create([FromBody] CreateRentalRequest request)
-            => StatusCode((int)HttpStatusCode.Created, _mediator.Send(new CreateRentalCommand(request.Units, request.PreparationTimeInDays)));
+        public async Task<IActionResult> Create([FromBody] CreateRentalRequest request)
+            => StatusCode((int)HttpStatusCode.Created, await _mediator.Send(new CreateRentalCommand(request.Units, request.PreparationTimeInDays)));
     }
 }

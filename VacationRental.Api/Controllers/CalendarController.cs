@@ -1,6 +1,8 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 using VacationRental.Domain.Queries.GetCalendar;
 
 namespace VacationRental.Api.Controllers
@@ -30,7 +32,7 @@ namespace VacationRental.Api.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult Get([FromQuery] GetCalendarCommand request)
-            => Ok(_mediator.Send(new GetCalendarCommand(request.RentalId, request.Start, request.Nights)));
+        public async Task<IActionResult> Get([FromQuery] int rentalId, [FromQuery] DateTime start, [FromQuery]int nights)
+            => Ok( await _mediator.Send(new GetCalendarQuery(rentalId, start, nights)));
     }
 }

@@ -7,9 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using System.Collections.Generic;
 using VacationRental.Api.Configurations.Swagger;
-using VacationRental.Api.Models;
 using VacationRental.Infra.CrossCutting.IoC;
 
 namespace VacationRental.Api
@@ -35,6 +33,8 @@ namespace VacationRental.Api
                 .ConfigureContainer()
                 .AddResponseCompression()
                 .AddRouting()
+                .AddHealthChecks()
+                .Services
                 .AddApiVersioning(options => options.ReportApiVersions = true)
                 .AddVersionedApiExplorer(options =>
                 {
@@ -42,9 +42,7 @@ namespace VacationRental.Api
                     options.SubstituteApiVersionInUrl = true;
                 })
                 .AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>()
-                .AddSwaggerGen(options => options.OperationFilter<SwaggerDefaultValues>())
-                .AddSingleton<IDictionary<int, RentalViewModel>>(new Dictionary<int, RentalViewModel>())
-                .AddSingleton<IDictionary<int, BookingViewModel>>(new Dictionary<int, BookingViewModel>());
+                .AddSwaggerGen(options => options.OperationFilter<SwaggerDefaultValues>());
         }
 
         public void Configure(IApplicationBuilder app, IHostEnvironment env, IApiVersionDescriptionProvider provider)
@@ -56,8 +54,8 @@ namespace VacationRental.Api
 
             app.UseRouting()
                .ConfigureSwagger(_configuration, provider)
-               .UseEndpoints(enpoints => enpoints.MapControllers());
-;
+               .UseEndpoints(enpoints => enpoints.MapControllers())
+               .UseHealthChecks("/healthcheck");;
         }
     }
 }
