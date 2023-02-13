@@ -12,5 +12,6 @@
 
         private DateTime _startIgnoreTime;
         public int Nights { get; set; }
+        public int Units { get; set; }
     }
 }

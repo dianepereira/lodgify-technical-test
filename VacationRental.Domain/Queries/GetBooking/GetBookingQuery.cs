@@ -3,11 +3,11 @@ using VacationRental.Domain.Core.Dtos.Responses;
 
 namespace VacationRental.Domain.Queries.GetBooking
 {
-    public  class GetBookingCommand : IRequest<GetBookingResponse>
+    public  class GetBookingQuery : IRequest<GetBookingResponse>
     {
         public int Id { get; set; } 
 
-        public GetBookingCommand(int id)
+        public GetBookingQuery(int id)
         {
             Id = id;
         }   

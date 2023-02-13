@@ -3,11 +3,11 @@ using VacationRental.Domain.Core.Dtos.Responses;
 
 namespace VacationRental.Domain.Queries.GetRental
 {
-    public  class GetRentalCommand : IRequest<GetRentalResponse>
+    public  class GetRentalQuery : IRequest<GetRentalResponse>
     {
         public int Id { get; set; }
 
-        public GetRentalCommand(int reantalId)
+        public GetRentalQuery(int reantalId)
         {
             Id = reantalId;
         }

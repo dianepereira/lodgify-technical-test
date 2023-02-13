@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using System.Threading.Tasks;
 using VacationRental.Domain.Commands.CreateBooking;
 using VacationRental.Domain.Core.Dtos.Requests;
 using VacationRental.Domain.Queries.GetBooking;
@@ -34,9 +35,8 @@ namespace VacationRental.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult Get([FromRoute] int bookingId)
-            => Ok(_mediator.Send(new GetBookingCommand(bookingId)));
-
+        public async Task<IActionResult> Get([FromRoute] int bookingId)
+            => Ok(await _mediator.Send(new GetBookingQuery(bookingId)));
 
         /// <summary>
         /// Create the the booking for a rental
@@ -50,8 +50,7 @@ namespace VacationRental.Api.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public IActionResult Create([FromBody] CreateBookingRequest request)
-            => StatusCode((int)HttpStatusCode.Created, _mediator.Send(new CreateBookingCommand(request.RentalId, request.Start, request.Nights)));
-
+        public async Task<IActionResult> Create([FromBody] CreateBookingRequest request)
+            => StatusCode((int)HttpStatusCode.Created, await _mediator.Send(new CreateBookingCommand(request.RentalId, request.Start, request.Nights, request.Units)));
     }
 }
